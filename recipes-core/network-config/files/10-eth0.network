@@ -1,0 +1,11 @@
+[Match]
+Driver=!r8152
+Name=!veth*
+Type=ether
+
+[Network]
+DHCP=yes
+
+[DHCP]
+UseMTU=yes
+RouteMetric=10

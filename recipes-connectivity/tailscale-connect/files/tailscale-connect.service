@@ -1,0 +1,12 @@
+[Unit]
+Description=Connect to Tailscale on first boot
+DefaultDependencies=no
+After=systemd-networkd-wait-online.service tailscaled.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/tailscale-connect.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target

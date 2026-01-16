@@ -1,0 +1,11 @@
+[Unit]
+Description=Timer to shutdown remote server at 1:00 (EST) or 6:00 (UTC)
+After=time-sync.target
+Wants=time-sync.target
+
+[Timer]
+OnCalendar=*-*-* 06:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

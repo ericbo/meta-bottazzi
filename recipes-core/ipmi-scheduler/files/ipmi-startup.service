@@ -1,0 +1,6 @@
+[Unit]
+Description=Start remote server over IPMI
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/ipmi-startup.sh

@@ -9,7 +9,7 @@ SRC_URI = " \
     file://nginx.service.d/override.conf \
 "
 
-RDEPENDS:${PN} = "nginx first-boot-config"
+RDEPENDS:${PN} = "nginx first-boot-config ca-certificates"
 
 python () {
     cert_file = d.getVar('FIRST_BOOT_CERT_FILE')

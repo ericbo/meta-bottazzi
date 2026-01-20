@@ -1,6 +1,7 @@
 #!/bin/sh
 
 CONFIG_TAILSCALE_FILE="/boot/tailscale.conf"
+RESOLVED_CONF="/etc/systemd/resolved.conf.d/tailscale.conf"
 
 echo "First boot detected, initializing system...."
 
@@ -26,6 +27,21 @@ else
     echo "Failed to connect to Tailscale"
     exit 1
 fi
+
+# Configure Resolved
+mkdir -p "$(dirname "$RESOLVED_CONF")"
+
+cat > "$RESOLVED_CONF" << 'EOF'
+[Resolve]
+DNSStubListener=yes
+EOF
+
+# Fix resolv.conf symlink
+rm -f /etc/resolv.conf
+ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+
+# Restart systemd-resolved
+systemctl restart systemd-resolved
 
 # Disable service
 echo "Disabling tailscale connect service..."

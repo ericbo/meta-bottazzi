@@ -1,0 +1,42 @@
+#!/bin/sh
+
+CONFIG_FILE="/boot/hostname.conf"
+CERT_FILE="@FIRST_BOOT_CERT_FILE@"
+KEY_FILE="@FIRST_BOOT_KEY_FILE@"
+
+# Read hostname from config or use current hostname
+echo "First boot detected, initializing system...."
+if [ -f "$CONFIG_FILE" ]; then
+    echo "$CONFIG_FILE detected!"
+    NEW_HOSTNAME=$(head -n 1 "$CONFIG_FILE" | tr -d '[:space:]')
+
+    echo "Setting hostname to $NEW_HOSTNAME"
+    if [ -n "$NEW_HOSTNAME" ]; then
+        echo "$NEW_HOSTNAME" > /etc/hostname
+        hostname "$NEW_HOSTNAME"
+        # Optional: update /etc/hosts
+        sed -i "s/127.0.1.1.*/127.0.1.1\t$NEW_HOSTNAME/" /etc/hosts
+    fi
+
+    rm -f "$CONFIG_FILE"
+fi
+
+# Use current hostname for cert generation
+CURRENT_HOSTNAME=$(hostname)
+echo "Generating self signed certificate for hostname $CURRENT_HOSTNAME"
+
+# Generate self-signed certificate
+mkdir -p "$(dirname "$CERT_FILE")" "$(dirname "$KEY_FILE")"
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+    -keyout "$KEY_FILE" \
+    -out "$CERT_FILE" \
+    -subj "/C=US/ST=State/L=City/O=Organization/CN=${CURRENT_HOSTNAME}"
+
+chmod 644 "$CERT_FILE"
+chmod 600 "$KEY_FILE"
+
+# Disable service
+echo "Disabling startup service..."
+systemctl disable first-boot-config.service
+
+echo "Done!"

@@ -1,0 +1,6 @@
+[Unit]
+Description=Shutdown remote server via IPMI
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/ipmi-shutdown.sh

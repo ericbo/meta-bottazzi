@@ -1,0 +1,11 @@
+[Unit]
+Description=Timer to start remote server at 23:50 (EST) or 4:50 (UTC)
+After=time-sync.target
+Wants=time-sync.target
+
+[Timer]
+OnCalendar=*-*-* 4:50:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

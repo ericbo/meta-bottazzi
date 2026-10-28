@@ -1,12 +1,17 @@
 [Unit]
 Description=Connect to Tailscale on first boot
-DefaultDependencies=no
-After=systemd-networkd-wait-online.service tailscaled.service
+# The Pi has no RTC: wait for NTP so TLS to the control server doesn't fail
+# on a stale clock, and for a usable network link.
+Wants=network-online.target systemd-time-wait-sync.service
+After=network-online.target time-sync.target tailscaled.service
+Requires=tailscaled.service
 
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/tailscale-connect.sh
 RemainAfterExit=yes
+Restart=on-failure
+RestartSec=30
 
 [Install]
-WantedBy=sysinit.target
+WantedBy=multi-user.target

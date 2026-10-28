@@ -1,8 +1,8 @@
 # Common base for all meta-bottazzi images.
 #
-# Provides first boot provisioning (hostname + self signed certificate) and
-# Tailscale connectivity. Images require this file and append their own
-# features and services to IMAGE_INSTALL.
+# Provides first boot provisioning (hostname + self signed certificate), DHCP on
+# the onboard Ethernet and Tailscale connectivity. Images require this file and
+# append their own features and services to IMAGE_INSTALL.
 
 LICENSE = "MIT"
 
@@ -14,6 +14,7 @@ IMAGE_INSTALL = " \
     packagegroup-core-boot \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     first-boot-config \
+    network-dhcp \
     tailscale \
     tailscale-connect \
 "

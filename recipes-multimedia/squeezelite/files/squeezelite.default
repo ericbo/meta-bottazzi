@@ -1,0 +1,9 @@
+# Extra options passed to squeezelite (see `squeezelite -h`).
+#
+# The player name defaults to the hostname; override with -n <name>.
+# -o <device>   ALSA output device, list with `squeezelite -l` (default: "default")
+# -s <server>   Music Assistant / Lyrion server address (default: auto-discover)
+# -V <control>  Use an ALSA hardware mixer control for volume, e.g. -V PCM
+#
+# Example: SL_OPTS="-o hw:CARD=Headphones,DEV=0 -s 192.168.1.10"
+SL_OPTS=""

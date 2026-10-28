@@ -14,6 +14,7 @@ All images share `recipes-core/images/bottazzi-image.inc`, which provides:
 
 - **first-boot-config**: sets the hostname from `/boot/hostname.conf` and generates a self-signed TLS certificate (`/etc/ssl/certs/server.crt`, `/etc/ssl/private/server.key`).
 - **network-dhcp**: a DHCP client on the onboard Ethernet (`eth0`).
+- **wifi-config**: joins the Wi-Fi network in `/boot/wifi.conf` with a USB adapter (tested hardware: Ralink RT5370, `rt2800usb` driver). The adapter is always named `wlan0` and gets its address over DHCP. When both are connected, Ethernet takes priority.
 - **tailscale** + **tailscale-connect**: joins the tailnet on first boot using the auth key in `/boot/tailscale.conf`, with Tailscale SSH enabled.
   The `tailscale` recipe installs Tailscale's official static binaries from [pkgs.tailscale.com](https://pkgs.tailscale.com/stable/#static), using the latest stable release by default (see [Tailscale version](#tailscale-version)).
 
@@ -147,11 +148,13 @@ services read each file once and then delete it.
 | --- | --- | --- |
 | `hostname.conf` | The device hostname on one line, e.g. `raspberrypi-ipmi-02` | first-boot-config |
 | `tailscale.conf` | A Tailscale auth key on one line, e.g. `tskey-auth-...` | tailscale-connect |
+| `wifi.conf` | Optional. The Wi-Fi SSID on line 1 and the passphrase on line 2. Leave line 2 empty for an open network. | wifi-config |
 
 ```sh
 sudo mount /dev/sdX1 /mnt
 echo "raspberrypi-ipmi-02" | sudo tee /mnt/hostname.conf
 echo "tskey-auth-XXXXXXXX" | sudo tee /mnt/tailscale.conf
+printf '%s\n%s\n' "My SSID" "my passphrase" | sudo tee /mnt/wifi.conf
 sudo umount /mnt
 ```
 
@@ -159,6 +162,14 @@ Without `hostname.conf`, the device keeps its default hostname. Either way,
 the TLS certificate is generated for whatever the hostname is at that point.
 Generate the auth key from the Tailscale admin console. Use a pre-approved key
 if device approval is enabled on your tailnet.
+
+`wifi.conf` is read on every boot, not just the first. To move the device to
+another network, put a new `wifi.conf` on the boot partition and reboot. The
+passphrase is stored on the device as a hashed PSK in
+`/etc/wpa_supplicant/wpa_supplicant-wlan0.conf`. The device counts as online
+when either Ethernet or Wi-Fi is up. This means a Wi-Fi-only device doesn't
+wait for the unplugged Ethernet port before services such as tailscale-connect
+start.
 
 ### remote-backup-image: IPMI credentials
 

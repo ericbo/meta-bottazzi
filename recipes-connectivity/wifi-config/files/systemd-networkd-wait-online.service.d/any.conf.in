@@ -1,0 +1,5 @@
+# Consider the system online once any link (Ethernet or WiFi) is up, rather
+# than waiting for every configured link.
+[Service]
+ExecStart=
+ExecStart=@SYSTEMD_UNITDIR@/systemd-networkd-wait-online --any

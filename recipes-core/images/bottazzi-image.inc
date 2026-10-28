@@ -15,6 +15,7 @@ IMAGE_INSTALL = " \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     first-boot-config \
     network-dhcp \
+    wifi-config \
     tailscale \
     tailscale-connect \
 "

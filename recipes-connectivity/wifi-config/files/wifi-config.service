@@ -1,0 +1,13 @@
+[Unit]
+Description=Apply WiFi configuration from /boot/wifi.conf
+DefaultDependencies=no
+After=local-fs.target
+Before=network-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/wifi-config.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target

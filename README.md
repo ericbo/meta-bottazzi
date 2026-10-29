@@ -8,7 +8,7 @@ a common base image and one or more purpose-built images on top of it.
 | Image | Description |
 | --- | --- |
 | `remote-backup-image` | Powers a backup server on and off over IPMI on a schedule, and exposes the server's IPMI web/KVM interface through an nginx reverse proxy over Tailscale. |
-| `audio-player-image` | A squeezelite network audio player that streams music, TTS and chimes from Home Assistant via Music Assistant. |
+| `audio-player-image` | A squeezelite network audio player that streams music, TTS and chimes from Home Assistant via Music Assistant. It plays through the onboard audio or a Bluetooth speaker. |
 
 All images share `recipes-core/images/bottazzi-image.inc`, which provides:
 
@@ -32,6 +32,7 @@ On top of the base, it adds:
 
 - **squeezelite**: a Slimproto player that runs as a systemd service, outputs through ALSA and uses the hostname as its player name. It supports FLAC, PCM, Ogg Vorbis and MP3.
 - **alsa-utils** (`aplay`, `amixer`): for listing output devices and setting levels.
+- **bluetooth-speaker** + **bluez-alsa**: pairs with the Bluetooth speaker in `/boot/bluetooth.conf`, reconnects whenever it drops, and makes it the default audio output. It streams A2DP with SBC XQ (452 kbps). Tested with the TP-Link UB500 (`2357:0604`, Realtek RTL8761BU).
 
 ## Setup
 
@@ -149,6 +150,7 @@ services read each file once and then delete it.
 | `hostname.conf` | The device hostname on one line, e.g. `raspberrypi-ipmi-02` | first-boot-config |
 | `tailscale.conf` | A Tailscale auth key on one line, e.g. `tskey-auth-...` | tailscale-connect |
 | `wifi.conf` | Optional. The Wi-Fi SSID on line 1 and the passphrase on line 2. Leave line 2 empty for an open network. | wifi-config |
+| `bluetooth.conf` | audio-player-image only, optional. The speaker's Bluetooth address on one line, e.g. `AA:BB:CC:DD:EE:FF`. | bluetooth-speaker |
 
 ```sh
 sudo mount /dev/sdX1 /mnt
@@ -217,3 +219,31 @@ The onboard audio is turned on by default (`dtparam=audio=on`). To use a DAC
 HAT, add its overlay to `config.txt` (for example, in `local.conf` add
 `RPI_EXTRA_CONFIG = "dtoverlay=hifiberry-dacplus"`). Then select the HAT's
 device with `-o`.
+
+### audio-player-image: Bluetooth speaker
+
+1. Find the speaker's Bluetooth address. It's usually shown in your phone's
+   Bluetooth settings after you pair with it once. You can also find it on the
+   Pi: put the speaker in pairing mode and run
+   `bluetoothctl --timeout 20 scan on`.
+2. Put the address in `bluetooth.conf` on the boot partition, then reboot:
+
+   ```sh
+   echo "AA:BB:CC:DD:EE:FF" | sudo tee /mnt/bluetooth.conf
+   ```
+
+3. Put the speaker in pairing mode. Every 15 seconds the Pi tries to pair until
+   it succeeds, then marks the speaker as trusted. After that it reconnects
+   whenever the speaker is on and in range.
+
+Once paired, `/etc/asound.conf` points the default ALSA device at the speaker,
+so squeezelite needs no `-o` option. Leave `-C` unset in
+`/etc/default/squeezelite`. Holding the stream open keeps chimes from getting
+their first second cut off while the Bluetooth link wakes up. If the speaker is
+off, squeezelite retries the output every few seconds and resumes once it
+reconnects.
+
+To switch speakers, put the new address in `bluetooth.conf` and reboot. The old
+speaker is forgotten. Follow the pairing log with
+`journalctl -fu bluetooth-speaker`.
+

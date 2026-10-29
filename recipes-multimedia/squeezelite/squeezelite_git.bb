@@ -13,7 +13,7 @@ PV = "2.0.0.1609+git"
 
 S = "${WORKDIR}/git"
 
-inherit systemd features_check
+inherit systemd features_check useradd
 
 REQUIRED_DISTRO_FEATURES = "alsa systemd"
 
@@ -23,6 +23,11 @@ DEPENDS = "alsa-lib flac libogg libvorbis mpg123"
 # picked up automatically. FLAC, PCM, Vorbis and MP3 (mpg123) are enough for
 # Music Assistant / Lyrion streams; AAC (faad) and libmad are disabled.
 EXTRA_OEMAKE = "OPTS='-DLINKALL -DNO_FAAD -DNO_MAD'"
+
+# A fixed user rather than DynamicUser: dbus-daemon drops connections from
+# dynamic users here, which breaks the BlueALSA output.
+USERADD_PACKAGES = "${PN}"
+USERADD_PARAM:${PN} = "--system --home-dir /nonexistent --no-create-home --shell /bin/false --groups audio --user-group squeezelite"
 
 SYSTEMD_SERVICE:${PN} = "squeezelite.service"
 SYSTEMD_AUTO_ENABLE = "enable"

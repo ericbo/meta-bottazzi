@@ -1,0 +1,12 @@
+[Unit]
+Description=Pair with and stay connected to the Bluetooth speaker
+Requires=bluetooth.service
+After=bluetooth.service bluealsa.service
+
+[Service]
+ExecStart=/usr/bin/bluetooth-speaker.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

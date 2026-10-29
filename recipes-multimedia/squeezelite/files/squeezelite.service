@@ -6,8 +6,7 @@ Wants=network-online.target
 [Service]
 EnvironmentFile=-/etc/default/squeezelite
 ExecStart=/usr/bin/squeezelite -n %H $SL_OPTS
-DynamicUser=yes
-SupplementaryGroups=audio
+User=squeezelite
 Restart=on-failure
 RestartSec=5
 

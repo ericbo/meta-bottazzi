@@ -4,6 +4,7 @@ require bottazzi-image.inc
 
 IMAGE_INSTALL += " \
     squeezelite \
+    bluetooth-speaker \
     alsa-utils-aplay \
     alsa-utils-amixer \
 "
